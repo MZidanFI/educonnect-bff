@@ -1,5 +1,5 @@
 server:
-  port: 71
+  port: 8090
 
 spring:
   application:
@@ -8,7 +8,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:66/eureka
+      defaultZone: http://localhost:8079/eureka
 
 jwt:
   secret: educonnect-rahasia-super-aman-jangan-disebar-2026
