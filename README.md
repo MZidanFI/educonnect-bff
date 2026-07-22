@@ -242,3 +242,161 @@ tugas ini):
 - Belum ada endpoint `POST` khusus untuk `enrollments` — masih insert manual via MongoDB
 - Belum ada validasi input (field kosong masih bisa tersimpan sebagai `null`)
 - Secret JWT sebaiknya disimpan di environment variable, bukan hardcode di `application.yml`
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Pembagian Tugas Kelompok — EduConnect (5 Anggota)
+
+Pembagian ini dibuat supaya setiap anggota punya tanggung jawab yang jelas,
+proporsional, dan saling terhubung — sehingga tiap orang paham alur sistem
+secara keseluruhan, bukan cuma bagian sendiri.
+
+---
+
+## Prinsip Pembagian
+
+1. **Tiap orang pegang minimal 1 service utuh** (dari model sampai controller),
+   supaya masing-masing benar-benar paham siklus penuh Spring Boot.
+2. **Topik utama (BFF) dan fitur pendukung (Gateway, JWT) dipisah ke orang
+   yang berbeda**, supaya beban kerja merata dan tidak ada 1 orang yang
+   mengerjakan bagian paling kompleks sendirian.
+3. **Semua anggota tetap wajib paham keseluruhan alur**, karena saat sidang/
+   presentasi, dosen bisa tanya ke siapa saja soal bagian manapun.
+
+---
+
+## Pembagian per Anggota
+
+### 👤 Anggota 1 — Course Service + Enrollment
+**Tanggung jawab:**
+- Setup project `course-service` dari Spring Initializr
+- Model `Course` & `Enrollment`, Repository, Service, Controller
+- Endpoint: `GET/POST /internal/courses`, `GET /internal/courses/enrolled`
+- Koneksi ke MongoDB (`course_db`)
+- Swagger documentation untuk service ini
+
+**Yang harus dipahami untuk presentasi:**
+- Bagaimana data Course & Enrollment saling berelasi
+- Kenapa dipisah jadi 2 collection, bukan digabung
+- Cara kerja `MongoRepository` dan query method (`findByUserId`)
+
+---
+
+### 👤 Anggota 2 — User Service
+**Tanggung jawab:**
+- Setup project `user-service` dari Spring Initializr
+- Model `User`, Repository, Service, Controller
+- Endpoint: `GET/POST /internal/users`, `GET /internal/users/{id}/profile`
+- Koneksi ke MongoDB (`user_db`)
+- Swagger documentation untuk service ini
+
+**Yang harus dipahami untuk presentasi:**
+- Struktur data profil user
+- Kenapa User Service terpisah dari Auth Service (pemisahan concern: profil vs kredensial login)
+- Cara kerja endpoint `GET /{id}/profile`
+
+---
+
+### 👤 Anggota 3 — Auth Service (JWT)
+**Tanggung jawab:**
+- Setup project `auth-service` dari Spring Initializr
+- Model `Account`, Repository, Service, Controller
+- `JwtUtil` (generate & validasi token)
+- Endpoint: `POST /auth/register`, `POST /auth/login`
+- `SecurityConfig` untuk auth-service
+- Swagger documentation untuk service ini
+- **Distribusikan `JwtUtil` dan secret yang sama ke Anggota 1, 2, dan 4**
+  (karena course-service, user-service, dan website-bff butuh validasi
+  token yang konsisten)
+
+**Yang harus dipahami untuk presentasi:**
+- Apa itu JWT, struktur token (header-payload-signature)
+- Alur login: username/password → validasi → generate token
+- Kenapa secret harus sama di semua service
+- Perbedaan Authentication vs Authorization
+
+---
+
+### 👤 Anggota 4 — Website BFF (Topik Utama)
+**Tanggung jawab:**
+- Setup project `website-bff` dari Spring Initializr (WebFlux)
+- `ConfigWebClient` (`@LoadBalanced`)
+- DTO gabungan (`DTODashboard`, `DTOEnrolledCourse`, `DTOUserProfile`)
+- `ServiceDashboard` — logic `Mono.zip` menggabungkan 2 service
+- `ControllerDashboard` — endpoint `/web/dashboard/{userId}`
+- `JwtAuthWebFilter` — proteksi token di level BFF
+- Swagger documentation untuk service ini
+
+**Yang harus dipahami untuk presentasi (paling penting, karena ini topik utama):**
+- **Apa itu BFF dan kenapa dipakai** — masalah apa yang diselesaikan
+- Kenapa pakai `WebClient` + `Mono.zip`, bukan panggil satu-satu berurutan
+- Bagaimana transformasi data terjadi (data mentah dari 2 service → 1 response gabungan)
+- Kenapa endpoint BFF (`/web/dashboard/{userId}`) berbeda dari endpoint backend asli
+- Bagaimana token diteruskan dari BFF ke service lain
+
+---
+
+### 👤 Anggota 5 — Infrastruktur: Eureka + API Gateway
+**Tanggung jawab:**
+- Setup project `eureka-server`
+- Setup project `api-gateway` (routing ke semua service)
+- Konfigurasi `eureka.client.service-url.defaultZone` di **semua** service
+  (koordinasi dengan Anggota 1-4 supaya semua konsisten)
+- Testing akhir: pastikan semua service ter-register di dashboard Eureka
+- Menyusun dan menjalankan **seluruh alur testing Postman** end-to-end
+  (karena posisinya paling pas untuk lihat semua service saling terhubung)
+
+**Yang harus dipahami untuk presentasi:**
+- Apa itu Service Discovery dan kenapa dibutuhkan (dibanding hardcode alamat)
+- Cara kerja `lb://nama-service` di Gateway
+- Bagaimana Gateway menentukan routing berdasarkan `Path predicate`
+- Kenapa API Gateway ini dihitung sebagai salah satu "fitur pendukung"
+
+---
+
+## Timeline Kerja yang Disarankan
+
+| Tahap | Kegiatan | Siapa |
+|---|---|---|
+| 1 | Setup awal: semua bikin project masing-masing, test jalan sendiri-sendiri (belum terhubung) | Semua (paralel) |
+| 2 | Anggota 5 setup Eureka & Gateway, minta semua daftar service-name yang konsisten | Anggota 5 → koordinasi ke semua |
+| 3 | Anggota 1 & 2 selesaikan Course & User Service, test manual pakai Postman langsung ke port masing-masing | Anggota 1, 2 |
+| 4 | Anggota 3 selesaikan Auth Service, bagikan `JwtUtil` + secret ke semua | Anggota 3 → distribusi ke 1, 2, 4 |
+| 5 | Semua terapkan JWT filter di service masing-masing (`SecurityConfig`) | Anggota 1, 2, 4 |
+| 6 | Anggota 4 bangun BFF setelah Course & User Service sudah stabil | Anggota 4 |
+| 7 | Integrasi semua lewat Gateway, testing end-to-end bareng-bareng | Semua, dikoordinir Anggota 5 |
+| 8 | Tambah Swagger di semua service | Masing-masing di service sendiri |
+| 9 | Susun laporan & siapkan presentasi | Semua |
+
+---
+
+## Pembagian Laporan/Dokumentasi
+
+Supaya adil, laporan juga dibagi sesuai bagian masing-masing:
+
+| Bagian Laporan | Penanggung Jawab |
+|---|---|
+| Pendahuluan & latar belakang studi kasus | Anggota 5 (paling paham gambaran besar) |
+| Penjelasan arsitektur BFF + diagram | Anggota 4 |
+| Course Service & Enrollment | Anggota 1 |
+| User Service | Anggota 2 |
+| Auth Service & JWT | Anggota 3 |
+| API Gateway & Eureka | Anggota 5 |
+| Hasil testing (screenshot Postman/Swagger) | Semua (masing-masing service sendiri) |
+| Kesimpulan & kendala | Semua (diskusi bareng, ditulis salah satu) |
+
+---
+
+## Tips Supaya Kerja Kelompok Lancar
+
+1. **Sepakati dulu nama package & konvensi penamaan** sebelum mulai coding
+   (misal semua pakai `com.edu.{nama-service}`, gaya `ServiceCourse` bukan
+   `CourseService`, dst) — supaya tidak keteteran waktu integrasi.
+2. **Sepakati JWT secret dari awal**, taruh di grup chat, supaya semua
+   service pakai secret yang sama persis.
+3. **Push kode secara berkala** (kalau pakai Git) supaya progress terlihat
+   dan mudah digabung.
+4. **Jadwalkan sesi integrasi bareng** (semua nyalakan laptop, jalankan
+   service masing-masing sekaligus) — ini fase paling penting karena di
+   sinilah biasanya ketahuan port bentrok, secret beda, atau path salah.
+5. **Setiap orang wajib bisa jelaskan bagian orang lain secara garis besar**
+   — minimal paham alur, walau detail implementasi beda orang.
