@@ -1,0 +1,17 @@
+server:
+  port: 68
+
+spring:
+  application:
+    name: course-service
+  mongodb:
+    uri: mongodb+srv://672023116_db_user:pzCCcnuDDe@clusterws.ekjhkmr.mongodb.net/
+    database: edu_db
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:66/eureka
+
+jwt:
+  secret: educonnect-rahasia-super-aman-jangan-disebar-2026

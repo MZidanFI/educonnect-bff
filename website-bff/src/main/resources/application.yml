@@ -1,0 +1,14 @@
+server:
+  port: 71
+
+spring:
+  application:
+    name: website-bff
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:66/eureka
+
+jwt:
+  secret: educonnect-rahasia-super-aman-jangan-disebar-2026

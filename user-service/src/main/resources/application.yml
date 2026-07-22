@@ -1,0 +1,21 @@
+server:
+  port: 69
+
+spring:
+  application:
+    name: user-service
+  mongodb:
+      uri: mongodb+srv://672023116_db_user:pzCCcnuDDe@clusterws.ekjhkmr.mongodb.net/
+      database: edu_db
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:66/eureka
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+jwt:
+  secret: educonnect-rahasia-super-aman-jangan-disebar-2026
