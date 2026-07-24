@@ -1,10 +1,13 @@
 package com.edu.course_service.service;
 
 import com.edu.course_service.dto.EnrolledCourseDTO;
+import com.edu.course_service.dto.RequestEnrollmentDTO;
 import com.edu.course_service.model.ModelCourse;
 import com.edu.course_service.model.ModelEnrollment;
 import com.edu.course_service.repository.RepositoryCourse;
 import com.edu.course_service.repository.RepositoryEnrollment;
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,5 +45,13 @@ public class ServiceCourse {
                 })
                 .filter(dto -> dto != null)
                 .collect(Collectors.toList());
+    }
+
+    public ModelEnrollment createEnrollment(RequestEnrollmentDTO request) {
+        ModelEnrollment enrollment = new ModelEnrollment();
+        enrollment.setUserId(request.getUserId());
+        enrollment.setCourseId(request.getCourseId());
+        enrollment.setProgress(request.getProgress());
+        return repositoryEnrollment.save(enrollment);
     }
 }
