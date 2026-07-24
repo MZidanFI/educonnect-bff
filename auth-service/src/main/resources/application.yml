@@ -5,7 +5,7 @@ spring:
   application:
     name: auth-service
   mongodb:
-    uri: mongodb+srv://672023116_db_user:pzCCcnuDDe@clusterws.ekjhkmr.mongodb.net/
+    uri: mongodb+srv://672023116_db_user:<pw>@clusterws.ekjhkmr.mongodb.net/
     database: edu_db
 
 eureka:
